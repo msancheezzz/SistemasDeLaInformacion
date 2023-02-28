@@ -2,15 +2,14 @@ import sqlite3
 import pandas as pd
 
 data = pd.read_csv("Data/alerts.csv")
+
 rows = data.shape[0]
 conexion = sqlite3.connect("bd1.db")
-conexion.execute("drop table articulos")
 
 try:
     conexion.execute("""create table articulos (
-                              codigo integer primary key autoincrement,
                               fecha text,
-                              sid integer,
+                              sid integer primary key,
                               msg text,
                               clasification text, 
                               prioridad integer,
@@ -23,11 +22,9 @@ try:
 except sqlite3.OperationalError:
     print("La tabla articulos ya existe")
 finally:
-    for i in range(100):
-        conexion.execute("insert into articulos(descripcion, precio) values(?, ?)",(str(data["msg"].iloc[i]), str(data["sid"].iloc[i])))
-        conexion.commit()
+    data.to_sql("articulos", conexion, if_exists="replace", index=False)
 
-    cursor = conexion.execute("select codigo,descripcion,precio from articulos")
+    cursor = conexion.execute("select sid, msg, puerto from articulos")
     for fila in cursor:
         print(fila)
 
