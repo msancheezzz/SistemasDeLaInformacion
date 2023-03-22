@@ -11,7 +11,7 @@ rows = data.shape[0]
 conexion = sqlite3.connect("bd1.db")
 cursor = conexion.cursor()
 
-##try:
+
 conexion.execute("""create table if not exists articulos (
                               fecha text,
                               sid integer primary key,
@@ -24,18 +24,18 @@ conexion.execute("""create table if not exists articulos (
                               puerto integer
                         )""")
 conexion.execute("""create table if not exists dispositivos(
-                                  name text,
+                                  id text,
                                   ip text primary key,
                                   localizacion text,
                                   responsable text,
                                   analisis integer
                             )""")
-conexion.execute("""create table if not exists responsables(
+cursor.execute("""create table if not exists responsables(
                                       name text primary key,
                                       telefono integer,
                                       rol text
                                 )""")
-conexion.execute("""create table if not exists analisis(
+cursor.execute("""create table if not exists analisis(
                                       id integer primary key,
                                       puertos_abiertos text,
                                       n_puertos_abiertos integer,
@@ -43,13 +43,11 @@ conexion.execute("""create table if not exists analisis(
                                       servicios_inseguros integer,
                                       vulnerabilidades_detectadas integer
                                 )""")
-"""except sqlite3.OperationalError:
-    print("La tabla articulos ya existe")
-finally:"""
-data.to_sql("articulos", conexion, if_exists="replace", index=False)
 for a in devices:
         responsable = a['responsable']
         cursor.execute("INSERT OR IGNORE INTO responsables (name,telefono,rol) VALUES(?,?,?)", (responsable['nombre'], responsable['telefono'], responsable['rol']))
+        aux = cursor.execute("select * from responsables")
+        print(aux)
         analisis = a['analisis']
         if analisis["puertos_abiertos"] == 'None':
             aux = 0
@@ -57,8 +55,14 @@ for a in devices:
             aux = len(analisis["puertos_abiertos"])
         cursor.execute("INSERT OR IGNORE INTO analisis (puertos_abiertos, n_puertos_abiertos, servicios, servicios_inseguros, vulnerabilidades_detectadas) VALUES(?,?,?,?,?)", (json.dumps(analisis['puertos_abiertos']), aux, analisis['servicios'], analisis['servicios_inseguros'], analisis['vulnerabilidades_detectadas']))
         analisis_id = cursor.lastrowid
-        cursor.execute("INSERT OR IGNORE INTO dispositivos (name) VALUES(?)", (a['id']))
+        cursor.execute("INSERT OR IGNORE INTO dispositivos (id,ip,localizacion,responsable,analisis) VALUES(?,?,?,?,?)", (a['id'],a['ip'],a['localizacion'],responsable['nombre'],analisis_id))
         ##devices.to_sql("dispositivos", conexion, if_exists="replace", index=False)
-print(devices)
+
+
+data.to_sql("articulos", conexion, if_exists="replace", index=False)
+
+
+
+
 
 conexion.close()
