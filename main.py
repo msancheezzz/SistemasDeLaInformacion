@@ -64,15 +64,42 @@ for a in devices:
 data.to_sql("articulos", conexion, if_exists="replace", index=False)
 cursor.execute("SELECT COUNT(*) FROM dispositivos")
 n_dispositivos = cursor.fetchone()
-print(n_dispositivos)
+print(n_dispositivos[0])
 cursor.execute("SELECT COUNT(*) FROM articulos")
 n_alertas = cursor.fetchone()
-print(n_alertas)
+print(n_alertas[0])
+
 cursor.execute("SELECT AVG(n_puertos_abiertos) FROM analisis")
 media_abiertos= cursor.fetchone()
-cursor.execute("SELECT STDEV(n_puertos_abiertos) FROM analisis")
+##cursor.execute("SELECT STDEV(n_puertos_abiertos) FROM analisis")
 desviacion_abiertos= cursor.fetchone()
-print(media_abiertos)
+print("{:.2f}".format(media_abiertos[0]), "{:.2f}".format(desviacion_abiertos))
+
+cursor.execute("SELECT AVG(servicios_inseguros) FROM analisis")
+media_inseguros= cursor.fetchone()
+##cursor.execute("SELECT STDEV(servicios_inseguros) FROM analisis")
+desviacion_inseguros= cursor.fetchone()
+print("{:.2f}".format(media_inseguros[0]),"{:.2f}".format(desviacion_inseguros))
+
+cursor.execute("SELECT AVG(vulnerabilidades_detectadas) FROM analisis")
+media_vulnerabilidades= cursor.fetchone()
+
+##cursor.execute("SELECT STDEV(vulnerabilidades_detectadas) FROM analisis")
+desviacion_vulnerabilidades= cursor.fetchone()
+print("{:.2f}".format(media_vulnerabilidades[0]),"{:.2f}".format(desviacion_vulnerabilidades))
+
+cursor.execute("SELECT max(n_puertos_abiertos) FROM analisis")
+max_abiertos= cursor.fetchone()
+cursor.execute("SELECT min(n_puertos_abiertos) FROM analisis")
+min_abiertos= cursor.fetchone()
+print(max_abiertos[0],min_abiertos[0])
+
+cursor.execute("SELECT max(vulnerabilidades_detectadas) FROM analisis")
+max_vuln= cursor.fetchone()
+cursor.execute("SELECT min(vulnerabilidades_detectadas) FROM analisis")
+min_vuln= cursor.fetchone()
+print(max_vuln[0],min_vuln[0])
+
 
 
 
