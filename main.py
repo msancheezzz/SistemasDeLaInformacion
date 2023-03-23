@@ -1,17 +1,15 @@
 import json
 import sqlite3
 import pandas as pd
-
+###### CONEXIONES Y FICHEROS #########
 data = pd.read_csv("Data/alerts.csv")
 dev = open("data/devices.json")
 devices = json.load(dev)
-
-
 rows = data.shape[0]
 conexion = sqlite3.connect("bd1.db")
 cursor = conexion.cursor()
 
-
+######## CREACIÓN DE TABLAS #############
 conexion.execute("""create table if not exists articulos (
                               fecha text,
                               sid integer primary key,
@@ -45,6 +43,8 @@ cursor.execute("""create table if not exists analisis(
                                       primary key(puertos_abiertos, n_puertos_abiertos, servicios, servicios_inseguros, vulnerabilidades_detectadas)
                                 )""")
 
+############## RELLENAR TABLAS #############################3
+
 analisis_id = 0
 for a in devices:
         responsable = a['responsable']
@@ -61,6 +61,10 @@ for a in devices:
         analisis_id+=1
 
 
+############## SELECCIONES #####################
+
+analisis_analisis = pd.read_sql_query("SELECT * FROM analisis", conexion)
+
 data.to_sql("articulos", conexion, if_exists="replace", index=False)
 cursor.execute("SELECT COUNT(*) FROM dispositivos")
 n_dispositivos = cursor.fetchone()
@@ -72,21 +76,17 @@ print(n_alertas[0])
 cursor.execute("SELECT AVG(n_puertos_abiertos) FROM analisis")
 media_abiertos= cursor.fetchone()
 ##cursor.execute("SELECT STDEV(n_puertos_abiertos) FROM analisis")
-desviacion_abiertos= cursor.fetchone()
-print("{:.2f}".format(media_abiertos[0]), "{:.2f}".format(desviacion_abiertos))
+print("{:.2f}".format(media_abiertos[0]), "{:.2f}".format(analisis_analisis['n_puertos_abiertos'].std()))
 
 cursor.execute("SELECT AVG(servicios_inseguros) FROM analisis")
 media_inseguros= cursor.fetchone()
 ##cursor.execute("SELECT STDEV(servicios_inseguros) FROM analisis")
-desviacion_inseguros= cursor.fetchone()
-print("{:.2f}".format(media_inseguros[0]),"{:.2f}".format(desviacion_inseguros))
+print("{:.2f}".format(media_inseguros[0]),"{:.2f}".format(analisis_analisis['servicios_inseguros'].std()))
 
 cursor.execute("SELECT AVG(vulnerabilidades_detectadas) FROM analisis")
 media_vulnerabilidades= cursor.fetchone()
-
 ##cursor.execute("SELECT STDEV(vulnerabilidades_detectadas) FROM analisis")
-desviacion_vulnerabilidades= cursor.fetchone()
-print("{:.2f}".format(media_vulnerabilidades[0]),"{:.2f}".format(desviacion_vulnerabilidades))
+print("{:.2f}".format(media_vulnerabilidades[0]),"{:.2f}".format(analisis_analisis['vulnerabilidades_detectadas'].std()))
 
 cursor.execute("SELECT max(n_puertos_abiertos) FROM analisis")
 max_abiertos= cursor.fetchone()
