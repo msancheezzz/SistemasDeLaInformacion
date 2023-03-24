@@ -35,6 +35,7 @@ cursor.execute("""create table if not exists responsables(
                                 )""")
 cursor.execute("""create table if not exists analisis(
                                       id integer,
+                                      ip integer,
                                       puertos_abiertos text,
                                       n_puertos_abiertos integer,
                                       servicios integer,
@@ -55,7 +56,7 @@ for a in devices:
         else:
             aux = len(analisis["puertos_abiertos"])
 
-        cursor.execute("INSERT OR IGNORE INTO analisis (id, puertos_abiertos, n_puertos_abiertos, servicios, servicios_inseguros, vulnerabilidades_detectadas) VALUES(?,?,?,?,?,?)", (analisis_id,json.dumps(analisis['puertos_abiertos']), aux, analisis['servicios'], analisis['servicios_inseguros'], analisis['vulnerabilidades_detectadas']))
+        cursor.execute("INSERT OR IGNORE INTO analisis (id, ip, puertos_abiertos, n_puertos_abiertos, servicios, servicios_inseguros, vulnerabilidades_detectadas) VALUES(?,?,?,?,?,?,?)", (analisis_id, a['ip'],json.dumps(analisis['puertos_abiertos']), aux, analisis['servicios'], analisis['servicios_inseguros'], analisis['vulnerabilidades_detectadas']))
         cursor.execute("INSERT OR IGNORE INTO dispositivos (id,ip,localizacion,responsable,analisis) VALUES(?,?,?,?,?)", (a['id'],a['ip'],a['localizacion'],responsable['nombre'],analisis_id))
         ##devices.to_sql("dispositivos", conexion, if_exists="replace", index=False)
         analisis_id+=1
@@ -98,5 +99,6 @@ cursor.execute("SELECT min(vulnerabilidades_detectadas) FROM analisis")
 min_vuln= cursor.fetchone()
 print("Máximo de vulnerabilidades: " + str(max_vuln[0]) + "\nMínimo de vulnerabilidades: " + str(min_vuln[0]))
 
+vulnerabilidadesPrioridad = pd.read_sql_query("", conexion)
 
 conexion.close()
